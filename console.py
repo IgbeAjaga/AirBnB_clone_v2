@@ -32,8 +32,7 @@ def parse(arg):
 
 
 class HBNBCommand(cmd.Cmd):
-    """Defines the HBnB command interpreter.
-
+    """Defines the HolbertonBnB command interpreter.
     Attributes:
         prompt (str): The command prompt.
     """
@@ -75,48 +74,51 @@ class HBNBCommand(cmd.Cmd):
         return False
 
     def do_quit(self, arg):
-        """
-        -> Description: quits the command interpreter
-        -> Usage: quit
-        Return: True
-        """
+        """Quit command to exit the program."""
         return True
 
     def do_EOF(self, arg):
-        """
-        -> Description:
-            - quits command interpreter on EOF marker (if no text in cmd line)
-            - performs forward delete if in between two
-              characters or line beginning
-        -> Usage: Ctrl + D
-        Return: True
-        """
+        """EOF signal to exit the program."""
         print("")
         return True
 
-    def do_create(self, arg):
+    def do_create(self, line):
+        """Usage: create <class> <key 1>=<value 2> <key 2>=<value 2> ...
+        Create a new class instance with given keys/values and print its id.
         """
-        -> Description:
-            - creates a new instance of BaseModel
-            - saves it the JSON file
-            - prints the id
-        -> Usage: create <ClassName>
-        """
-        argl = parse(arg)
-        if len(argl) == 0:
+        try:
+            if not line:
+                raise SyntaxError()
+            my_list = line.split(" ")
+
+            kwargs = {}
+            for i in range(1, len(my_list)):
+                key, value = tuple(my_list[i].split("="))
+                if value[0] == '"':
+                    value = value.strip('"').replace("_", " ")
+                else:
+                    try:
+                        value = eval(value)
+                    except (SyntaxError, NameError):
+                        continue
+                kwargs[key] = value
+
+            if kwargs == {}:
+                obj = eval(my_list[0])()
+            else:
+                obj = eval(my_list[0])(**kwargs)
+                storage.new(obj)
+            print(obj.id)
+            obj.save()
+
+        except SyntaxError:
             print("** class name missing **")
-        elif argl[0] not in HBNBCommand.__classes:
+        except NameError:
             print("** class doesn't exist **")
-        else:
-            print(eval(argl[0])().id)
-            storage.save()
 
     def do_show(self, arg):
-        """
-        Description:
-            prints the string representation of instance
-            based on class name and id
-        -> Usage: show <ClassName> <id>
+        """Usage: show <class> <id> or <class>.show(<id>)
+        Display the string representation of a class instance of a given id.
         """
         argl = parse(arg)
         objdict = storage.all()
@@ -132,12 +134,8 @@ class HBNBCommand(cmd.Cmd):
             print(objdict["{}.{}".format(argl[0], argl[1])])
 
     def do_destroy(self, arg):
-        """
-        -> Description:
-            deletes an instance based on the class name and id
-            N/B: (change is saved into the JSON file)
-        -> Usage: destroy <ClassName> <id>
-        """
+        """Usage: destroy <class> <id> or <class>.destroy(<id>)
+        Delete a class instance of a given id."""
         argl = parse(arg)
         objdict = storage.all()
         if len(argl) == 0:
