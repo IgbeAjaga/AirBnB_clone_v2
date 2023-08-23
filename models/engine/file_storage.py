@@ -17,7 +17,6 @@ class FileStorage:
         new: updates the dictionary id
         save: Serializes, or converts Python objects into JSON strings
         reload: Deserializes, or converts JSON strings into Python objects.
-        delete: Deletes an object from __objects if it exists.
     Class Attributes:
         __file_path (str): The name of the file to save objects to.
         __objects (dict): A dictionary of instantiated objects.
@@ -30,12 +29,9 @@ class FileStorage:
                   "Amenity": Amenity, "City": City, "Review": Review,
                   "State": State}
 
-    def all(self, cls=None):
+    def all(self):
         '''Return dictionary of <class>.<id> : object instance'''
-        if cls is None:
-            return self.__objects
-        return {key: obj for key, obj in self.__objects.items()
-                if type(obj) == cls}
+        return self.__objects
 
     def new(self, obj):
         '''Set new __objects to existing dictionary of instances'''
@@ -62,10 +58,3 @@ class FileStorage:
                 self.__objects[key] = obj
         except FileNotFoundError:
             pass
-
-    def delete(self, obj=None):
-        """Delete obj from __objects if it exists"""
-        if obj:
-            key = '{}.{}'.format(obj.__class__.__name__, obj.id)
-            if key in self.__objects:
-                del self.__objects[key]
