@@ -1,5 +1,7 @@
 #!/usr/bin/python3
-"""Defines the FileStorage class."""
+"""
+Defines the FileStorage class.
+"""
 import json
 from models.base_model import BaseModel
 from models.amenity import Amenity
@@ -9,73 +11,62 @@ from models.review import Review
 from models.state import State
 from models.user import User
 
+
 class FileStorage:
-    """Represents the storage engine using a JSON file.
+    """ Represent an abstracted storage engine.
 
     Attributes:
-        __file_path (str): The path to the JSON file for data storage.
-        __objects (dict): A dictionary to store objects in memory.
+        __file_path (str): The name of the file to save objects to.
+        __objects (dict): A dictionary of instantiated objects.
     """
 
     __file_path = "file.json"
     __objects = {}
 
     def all(self, cls=None):
-        """Retrieve a dictionary of objects.
+        """Return a dictionary of instantiated objects in __objects.
 
-        Args:
-            cls (class, optional): The class of objects to retrieve.
-
-        Returns:
-            dict: A dictionary of objects (or a specific class of objects).
+        If a cls is specified, returns a dictionary of objects of that type.
+        Otherwise, returns the __objects dictionary.
         """
         if cls is not None:
-            if isinstance(cls, str):
+            if type(cls) == str:
                 cls = eval(cls)
-            class_objects = {}
-            for key, obj in self.__objects.items():
-                if isinstance(obj, cls):
-                    class_objects[key] = obj
-            return class_objects
+            cls_dict = {}
+            for k, v in self.__objects.items():
+                if type(v) == cls:
+                    cls_dict[k] = v
+            return cls_dict
         return self.__objects
 
     def new(self, obj):
-        """Add a new object to the storage dictionary.
-
-        Args:
-            obj (BaseModel): The object to be added to storage.
-        """
-        key = "{}.{}".format(type(obj).__name__, obj.id)
-        self.__objects[key] = obj
+        """Set in __objects obj with key <obj_class_name>.id."""
+        self.__objects["{}.{}".format(type(obj).__name__, obj.id)] = obj
 
     def save(self):
-        """Serialize the objects to the JSON file."""
-        serialized_objs = {key: obj.to_dict() for key, obj in self.__objects.items()}
-        with open(self.__file_path, "w", encoding="utf-8") as file:
-            json.dump(serialized_objs, file)
+        """Serialize __objects to the JSON file __file_path."""
+        odict = {o: self.__objects[o].to_dict() for o in self.__objects.keys()}
+        with open(self.__file_path, "w", encoding="utf-8") as f:
+            json.dump(odict, f)
 
     def reload(self):
-        """Deserialize the JSON file to objects, if it exists."""
+        """Deserialize the JSON file __file_path to __objects, if it exists."""
         try:
-            with open(self.__file_path, "r", encoding="utf-8") as file:
-                obj_dict = json.load(file)
-                for key, value in obj_dict.items():
-                    class_name = value["__class__"]
-                    del value["__class__"]
-                    self.new(eval(class_name)(**value))
+            with open(self.__file_path, "r", encoding="utf-8") as f:
+                for o in json.load(f).values():
+                    name = o["__class__"]
+                    del o["__class__"]
+                    self.new(eval(name)(**o))
         except FileNotFoundError:
             pass
 
     def delete(self, obj=None):
-        """Delete an object from the storage.
-
-        Args:
-            obj (BaseModel): The object to be deleted from storage.
-        """
-        if obj is not None:
-            key = "{}.{}".format(type(obj).__name__, obj.id)
-            self.__objects.pop(key, None)
+        """Delete a given object from __objects, if it exists."""
+        try:
+            del self.__objects["{}.{}".format(type(obj).__name__, obj.id)]
+        except (AttributeError, KeyError):
+            pass
 
     def close(self):
-        """Calls the reload method to reload the JSON file."""
+        """Call the reload method."""
         self.reload()
