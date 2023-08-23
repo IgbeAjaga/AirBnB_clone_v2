@@ -1,4 +1,5 @@
-s module defines a class to manage file storage for hbnb clone"""
+#!/usr/bin/python3
+"""This module defines a class to manage file storage for hbnb clone"""
 import json
 
 
@@ -65,3 +66,4 @@ class FileStorage:
             key = obj.__class__.__name__ + '.' + obj.id
             if key in self.__objects:
                 del self.__objects[key]
+
