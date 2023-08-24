@@ -2,15 +2,26 @@
 """
 City class, a subclass of BaseModel
 """
+from models.base_model import Base
 from models.base_model import BaseModel
+from sqlalchemy import Column
+from sqlalchemy import ForeignKey
+from sqlalchemy import String
+from sqlalchemy.orm import relationship
 
 
-class City(BaseModel):
+class City(BaseModel, Base):
+    """Represents a city in MySQL database.
+
+    Inherits from SQLAlchemy Base and links to the MySQL table cities.
+
+    Attributes:
+        __tablename__ (str): The name of the table that stores Cities.
+        name (sqlalchemy String): The name of the City.
+        state_id (sqlalchemy String): The state id of the City.
     """
-    A subclass of BaseModel class
-    Public class attributes:
-        state_id: (str) will be State.id
-        name:     (str)
-    """
-    state_id = ""
-    name = ""
+    __tablename__ = "cities"
+    name = Column(String(128), nullable=False)
+    state_id = Column(String(60), ForeignKey("states.id"), nullable=False)
+    places = relationship("Place", backref="cities", cascade="delete")
+

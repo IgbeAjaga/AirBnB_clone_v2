@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""user class, subclass of BaseModel
+"""Defines the User class.
 """
 from models.base_model import Base
 from models.base_model import BaseModel
@@ -9,16 +9,18 @@ from sqlalchemy.orm import relationship
 
 
 class User(BaseModel, Base):
-    """Representation of customer(user) for a MySQL database.
+    """Represents a user from the database.
+
+    Inherits from SQLAlchemy Base and links to the MySQL table users.
 
     Attributes:
-        __tablename__ (str): The name of the MySQL table to store users.
+        __tablename__ (str): The name of the table that stores users.
         email: (sqlalchemy String): The user's email address.
         password (sqlalchemy String): The user's password.
         first_name (sqlalchemy String): The user's first name.
-	reviews (sqlalchemy relationship): The User-Review relationship.
         last_name (sqlalchemy String): The user's last name.
         places (sqlalchemy relationship): The User-Place relationship.
+        reviews (sqlalchemy relationship): The User-Review relationship.
     """
     __tablename__ = "users"
     email = Column(String(128), nullable=False)
