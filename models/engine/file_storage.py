@@ -1,6 +1,5 @@
 #!/usr/bin/python3
-"""Defines the FileStorage class.
-"""
+"""Defines the FileStorage class."""
 import json
 from models.base_model import BaseModel
 from models.amenity import Amenity
@@ -23,33 +22,29 @@ class FileStorage:
     __objects = {}
 
     def all(self, cls=None):
-        """Returns a dictionary of models currently in storage
-	"""
-        if cls is not None:
-            if type(cls) == str:
-                cls = eval(cls)
-            cls_dict = {}
-            for k, v in self.__objects.items():
-                if type(v) == cls:
-                    cls_dict[k] = v
-            return cls_dict
-        return self.__objects
+        """Returns a dictionary of models currently in storage"""
+        if cls is None:
+            return self.__objects
+        if isinstance(cls, str):
+            cls = eval(cls)
+        cls_dict = {}
+        for key, value in self.__objects.items():
+            if isinstance(value, cls):
+                cls_dict[key] = value
+        return cls_dict
 
     def new(self, obj):
-        """Adds new object to storage dictionary
-	"""
+        """Adds new object to storage dictionary"""
         self.__objects["{}.{}".format(type(obj).__name__, obj.id)] = obj
 
     def save(self):
-        """Saves storage dictionary to file
-	"""
+        """Saves storage dictionary to file"""
         odict = {o: self.__objects[o].to_dict() for o in self.__objects.keys()}
         with open(self.__file_path, "w", encoding="utf-8") as f:
             json.dump(odict, f)
 
     def reload(self):
-        """Loads storage dictionary from file
-	"""
+        """Loads storage dictionary from file"""
         try:
             with open(self.__file_path, "r", encoding="utf-8") as f:
                 for o in json.load(f).values():
@@ -60,12 +55,11 @@ class FileStorage:
             pass
 
     def delete(self, obj=None):
-        """Delete an instance of type obj from the FileStorage
-	"""
-        try:
-            del self.__objects["{}.{}".format(type(obj).__name__, obj.id)]
-        except (AttributeError, KeyError):
-            pass
+        """Delete an instance of type obj from the FileStorage"""
+        if obj is not None:
+            key = "{}.{}".format(type(obj).__name__, obj.id)
+            if key in self.__objects:
+                del self.__objects[key]
 
     def close(self):
         """Call the reload method."""
