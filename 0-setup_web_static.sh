@@ -1,48 +1,62 @@
 #!/usr/bin/env bash
-# sets up my web servers for the deployment of web_static
+# install and setup nginx
+CONFIG_FILE="/etc/nginx/sites-available/default"
+HOST_NAME=$(hostname)
+MY_ID=496
+STATIC=/data/web_static
 
-echo -e "\e[1;32m START\e[0m"
+# check if hostname is correct
+if [[ $(hostname) =~ ^$MY_ID-web-[0-9]+ ]]; then
+    echo 'hostname properly configured'
+else
+    (>&2 echo 'hostname not configured properly...')
+    (>&2 echo 'please set hostname to pattern: 496-web-<server_id>...')
+    (>&2 echo 'Example: sudo hostnamectl set-hostname 496-web-<insert_server_id_here>')
+fi
 
-#--Updating the packages
-sudo apt-get -y update
-sudo apt-get -y install nginx
-echo -e "\e[1;32m Packages updated\e[0m"
-echo
+# install nginx
+apt-get -y update
+apt-get -y install nginx
 
-#--configure firewall
-sudo ufw allow 'Nginx HTTP'
-echo -e "\e[1;32m Allow incomming NGINX HTTP connections\e[0m"
-echo
+# update 404 error page
+echo "Ceci n'est pas une page" > /usr/share/nginx/html/404.html
 
-#--created the dir
-sudo mkdir -p /data/web_static/releases/test /data/web_static/shared
-echo -e "\e[1;32m directories created"
-echo
+# create static directories and links
+mkdir -p $STATIC/releases/test
+mkdir -p $STATIC/shared
+echo 'Holberton School Is Running!' > $STATIC/releases/test/index.html
+ln -sfn $STATIC/releases/test $STATIC/current
+sudo chown -f -R ubuntu:ubuntu /data/
 
-#--adds test string
-echo "<h1>Welcome to www.beta-scribbles.tech</h1>" > /data/web_static/releases/test/index.html
-echo -e "\e[1;32m Test string added\e[0m"
-echo
+# update config file to redirect
+printf %s "server {
+    listen 80;
+    listen [::]:80 default_server;
+    root   $STATIC/current;
+    index  index.html index.htm 8-index.html;
 
-#--prevent overwrite
-if [ -d "/data/web_static/current" ];
-then
-    echo "path /data/web_static/current exists"
-    sudo rm -rf /data/web_static/current;
-fi;
-echo -e "\e[1;32m prevent overwrite\e[0m"
-echo
+    add_header X-Served-By $HOST_NAME;
 
-#--create symbolic link
-sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
-sudo chown -hR ubuntu:ubuntu /data
+    location / {
+        alias $STATIC/current/;
+    }
 
-sudo sed -i '38i\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
+    location /redirect_me {
+        return 301 http://google.com/;
+    }
 
-sudo ln -sf '/etc/nginx/sites-available/default' '/etc/nginx/sites-enabled/default'
-echo -e "\e[1;32m Symbolic link created\e[0m"
-echo
+    location /hbnb_static {
+        alias $STATIC/current/;
+    }
 
-#--restart NGINX
-sudo service nginx restart
-echo -e "\e[1;32m restart NGINX\e[0m"
+    error_page 404 /404.html;
+    location /404 {
+      root /usr/share/nginx/html;
+      internal;
+    }
+}" > $CONFIG_FILE
+
+# start nginx after reloading config
+service nginx start
+# if nginx was already running restart it
+service nginx restart
