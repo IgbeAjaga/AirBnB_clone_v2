@@ -27,7 +27,7 @@
             <H3>States</H3>
             <H4>&nbsp;</H4>
             <DIV class="popover">
-							<UL>
+		<UL>
               {% for state in states.values()|sort(attribute="name") %}
                 <LI><STRONG>{{ state.name }}</STRONG>
                   <UL>
@@ -106,8 +106,6 @@
       </DIV>
     </MAIN>
 
-    <FOOTER>
-      School
-    </FOOTER>
+    <FOOTER>School</FOOTER>
   </BODY>
 </HTML>
