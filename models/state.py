@@ -9,7 +9,6 @@ from models.city import City
 from sqlalchemy import Column
 from sqlalchemy import String
 from sqlalchemy.orm import relationship
-from models import storage
 
 
 class State(BaseModel, Base):
@@ -31,7 +30,7 @@ class State(BaseModel, Base):
         def cities(self):
             """Get a list of all related City objects.
 	"""
-            city_list = [city for city in storage.all(City).values() if city.state_id == self.id]
+            city_list = []
             for city in list(models.storage.all(City).values()):
                 if city.state_id == self.id:
                     city_list.append(city)
