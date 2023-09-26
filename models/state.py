@@ -1,5 +1,4 @@
-#!/usr/bin/python3
-"""Defines the State class.
+ the State class.
 """
 import models
 from os import getenv
@@ -28,8 +27,7 @@ class State(BaseModel, Base):
     if getenv("HBNB_TYPE_STORAGE") != "db":
         @property
         def cities(self):
-            """Get a list of all related City objects.
-	"""
+            """Get a list of all related City objects."""
             city_list = []
             for city in list(models.storage.all(City).values()):
                 if city.state_id == self.id:

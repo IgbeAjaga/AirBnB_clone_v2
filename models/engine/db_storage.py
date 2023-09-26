@@ -29,7 +29,7 @@ class DBStorage:
 
     def __init__(self):
         """Initializes a new DBStorage instance.
-	"""
+        """
         self.__engine = create_engine("mysql+mysqldb://{}:{}@{}/{}".
                                       format(getenv("HBNB_MYSQL_USER"),
                                              getenv("HBNB_MYSQL_PWD"),
@@ -41,7 +41,7 @@ class DBStorage:
 
     def all(self, cls=None):
         """Queries the current database session on
-	 all objects of the given class.
+        all objects of the given class.
 
         Queries all types of objects if cls is none.
 
@@ -63,23 +63,23 @@ class DBStorage:
 
     def new(self, obj):
         """Adds obj to the current database session.
-	"""
+        """
         self.__session.add(obj)
 
     def save(self):
         """Commits all changes to the current database session.
-	"""
+        """
         self.__session.commit()
 
     def delete(self, obj=None):
         """Deletes obj from the current database session.
-	"""
+        """
         if obj is not None:
             self.__session.delete(obj)
 
     def reload(self):
         """Creates all tables in the database and initialize a new session.
-	"""
+        """
         Base.metadata.create_all(self.__engine)
         session_factory = sessionmaker(bind=self.__engine,
                                        expire_on_commit=False)
@@ -88,5 +88,5 @@ class DBStorage:
 
     def close(self):
         """Closes the working SQLAlchemy session.
-	"""
+        """
         self.__session.close()
